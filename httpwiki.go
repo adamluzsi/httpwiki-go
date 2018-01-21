@@ -55,7 +55,9 @@ func (wiki *HTTPWiki) show(w http.ResponseWriter, r *http.Request) {
 	data, err := wiki.Storage.Load(r.URL.Path)
 
 	if err != nil {
-		status.NotFound(w)
+		query := r.URL.Query()
+		query.Set("edit", "TRUE")
+		http.Redirect(w, r, r.URL.Path+"?"+query.Encode(), 307)
 		return
 	}
 

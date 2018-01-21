@@ -51,7 +51,7 @@ func TestWiki_ServeHTTP_PostNewContent_PersistFail(t *testing.T) {
 	require.Contains(t, string(w.Body.Bytes()), http.StatusText(http.StatusInternalServerError))
 }
 
-func TestWiki_ServeHTTP_GetContent_NotFound(t *testing.T) {
+func TestWiki_ServeHTTP_GetContentWhenNoWikiPageSavedToTheGivenPath_Redirect(t *testing.T) {
 	t.Parallel()
 
 	wiki, _ := NewWiki(errors.New("content not found!"))
@@ -61,9 +61,8 @@ func TestWiki_ServeHTTP_GetContent_NotFound(t *testing.T) {
 
 	wiki.ServeHTTP(w, r)
 
-	require.Equal(t, 404, w.Code)
-	require.NotNil(t, w.Body)
-	require.Contains(t, w.Body.String(), http.StatusText(http.StatusNotFound))
+	require.Equal(t, 307, w.Code)
+	require.Equal(t, "/test?edit=TRUE", w.Header().Get("Location"))
 
 }
 
