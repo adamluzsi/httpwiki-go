@@ -3,8 +3,6 @@ package httpwiki
 import (
 	"io/ioutil"
 	"net/http"
-
-	"github.com/adamluzsi/httpwiki-go/status"
 )
 
 type HTTPWiki struct {
@@ -30,7 +28,7 @@ func (wiki HTTPWiki) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		wiki.save(w, r)
 
 	default:
-		status.NotFound(w)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	}
 }
 
@@ -71,15 +69,19 @@ func (wiki *HTTPWiki) save(w http.ResponseWriter, r *http.Request) {
 	data, err := ioutil.ReadAll(r.Body)
 
 	if err != nil {
-		status.InternalServerError(w)
+		internalServerError(w)
 		return
 	}
 
 	if err := wiki.Storage.Save(r.URL.Path, data); err != nil {
-		status.InternalServerError(w)
+		internalServerError(w)
 		return
 	}
 
 	http.Redirect(w, r, r.URL.Path, http.StatusOK)
 
+}
+
+func internalServerError(w http.ResponseWriter) {
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
